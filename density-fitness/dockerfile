@@ -1,0 +1,46 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    wget \
+    build-essential \
+    gfortran \  
+    libssl-dev \
+    zlib1g-dev \
+    catch2 \
+    nlohmann-json3-dev \
+    libeigen3-dev \
+    libccp4-dev \
+    libclipper-dev \
+    libgsl-dev \
+    gcc-x86-64-linux-gnu \
+    g++-x86-64-linux-gnu \
+    libc6:amd64 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.sh && \
+    chmod +x cmake-3.28.3-linux-x86_64.sh && \
+    ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr && \
+    rm cmake-3.28.3-linux-x86_64.sh
+
+RUN git clone https://github.com/elsid/newuoa-cpp.git /tmp/newuoa && \
+    cd /tmp/newuoa && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=/usr && \
+    make && \
+    make install
+
+RUN git clone https://github.com/PDB-REDO/density-fitness.git /opt/density-fitness && \
+    cd /opt/density-fitness && \
+    cmake -S . -B build \
+    -DCMAKE_PREFIX_PATH=/usr \  
+    -Dnewuoa_DIR=/usr/lib/cmake/newuoa && \
+    cmake --build build && \
+    cmake --install build
+
+WORKDIR /data
