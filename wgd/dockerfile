@@ -1,25 +1,19 @@
 FROM python:3.8-slim
 
-# Set the working directory
 WORKDIR /app
 
-# Install system dependencies for psutil
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install virtualenv
 RUN pip install --no-cache-dir virtualenv
 
-# Create and activate virtual environment
 RUN virtualenv ENV
 
-# Activate the virtual environment and install dependencies
 RUN . ENV/bin/activate && \
     pip install --no-cache-dir numpy==1.19.0 wgd==2.0.38
 
-# Set the entrypoint to use the virtual environment
 ENTRYPOINT ["/bin/bash", "-c", "source ENV/bin/activate && exec \"$@\"", "--"]
 
